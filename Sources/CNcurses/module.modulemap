@@ -1,0 +1,8 @@
+module CNcurses [system] {
+  header "shim.h"
+  link "ncursesw"
+  link "panelw"
+  link "menuw"
+  link "formw"
+  export *
+}
