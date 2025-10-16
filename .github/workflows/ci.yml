@@ -5,58 +5,33 @@ on:
   pull_request:
 
 jobs:
-  unit-tests:
-    name: Unit Tests (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, macos-14]  # macOS-14 = Apple Silicon runner
+  build-and-smoke-ubuntu:
+    name: Build & Smoke (ubuntu - swift:6.0 container)
+    runs-on: ubuntu-24.04
+    container: swift:6.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Swift 6.0
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: "6.0"
-
-      # Dépendances pour les tests "purs Swift" normalement inutiles,
-      # mais on garde l'installation d'ncurses au cas où des tests
-      # importent indirectement le binding.
-      - name: Install ncurses (Ubuntu)
-        if: startsWith(matrix.os, 'ubuntu')
+      - name: Install ncurses
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libncursesw6 libncurses-dev
+          apt-get update
+          apt-get install -y --no-install-recommends libncursesw6 libncurses-dev
 
-      - name: Install ncurses (macOS)
-        if: startsWith(matrix.os, 'macos')
-        run: |
-          brew update
-          brew install ncurses
-          PREFIX="$(brew --prefix ncurses)"
-          sudo mkdir -p /usr/local/opt/ncurses/include /usr/local/opt/ncurses/lib
-          sudo ln -sfn "$PREFIX/include" /usr/local/opt/ncurses/include
-          sudo ln -sfn "$PREFIX/lib"     /usr/local/opt/ncurses/lib
-          ln -sfn "$PREFIX/include/ncursesw" Sources/CNcurses/include/ncursesw
-
-      - name: Build (debug)
-        run: swift build -v
-
-      - name: Run tests
+      - name: Swift build (debug)
         env:
           TERM: xterm-256color
-        run: swift test -v
+        run: swift build -v
 
-  build-and-smoke:
-    name: Build & Smoke (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    needs: unit-tests
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, macos-14]
+      - name: Run NewtermSmoke (pseudo-TTY)
+        env:
+          TERM: xterm-256color
+        run: script -q /dev/null swift run NewtermSmoke
+
+  build-and-smoke-macos:
+    name: Build & Smoke (macOS-14)
+    runs-on: macos-14
+    needs: []
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,14 +41,7 @@ jobs:
         with:
           swift-version: "6.0"
 
-      - name: Install ncurses (Ubuntu)
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libncursesw6 libncurses-dev
-
-      - name: Install ncurses (macOS)
-        if: startsWith(matrix.os, 'macos')
+      - name: Install ncurses (Homebrew)
         run: |
           brew update
           brew install ncurses
@@ -91,5 +59,5 @@ jobs:
       - name: Run NewtermSmoke (pseudo-TTY)
         env:
           TERM: xterm-256color
-        run: |
-          script -q /dev/null swift run NewtermSmoke
+        run: script -q /dev/null swift run NewtermSmoke
+

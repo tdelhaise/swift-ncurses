@@ -5,14 +5,30 @@ on:
   pull_request:
 
 jobs:
-  unit-tests:
-    name: Unit Tests (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, macos-14]  # macOS-14 = runner Apple Silicon
+  unit-tests-ubuntu:
+    name: Unit Tests (ubuntu - swift:6.0 container)
+    runs-on: ubuntu-24.04
+    container: swift:6.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Install ncurses
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends libncursesw6 libncurses-dev
+
+      - name: Build (debug)
+        run: swift build -v
+
+      - name: Run tests
+        env:
+          TERM: xterm-256color
+        run: swift test -v
+
+  unit-tests-macos:
+    name: Unit Tests (macOS-14)
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,15 +38,7 @@ jobs:
         with:
           swift-version: "6.0"
 
-      # Dépendances
-      - name: Install ncurses (Ubuntu)
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libncursesw6 libncurses-dev
-
-      - name: Install ncurses (macOS)
-        if: startsWith(matrix.os, 'macos')
+      - name: Install ncurses (Homebrew)
         run: |
           brew update
           brew install ncurses
