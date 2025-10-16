@@ -28,7 +28,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libncursesw6 libncursesw6-dev
+          sudo apt-get install -y --no-install-recommends libncursesw6 libncurses-dev
 
       - name: Install ncurses (macOS)
         if: startsWith(matrix.os, 'macos')
@@ -70,7 +70,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libncursesw6 libncursesw6-dev
+          sudo apt-get install -y --no-install-recommends libncursesw6 libncurses-dev
 
       - name: Install ncurses (macOS)
         if: startsWith(matrix.os, 'macos')
