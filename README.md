@@ -1,3 +1,7 @@
+
+[![CI](https://github.com/tdelhaise/swift-ncurses/actions/workflows/ci.yml/badge.svg)](https://github.com/tdelhaise/swift-ncurses/actions/workflows/ci.yml)
+
+
 # swift-ncurses
 
 Swift package **facade** for **libncursesw 6.x** (wide-char) with a Swift wrapper and a minimal integration smoke test.

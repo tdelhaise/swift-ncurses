@@ -5,14 +5,58 @@ on:
   pull_request:
 
 jobs:
-  build-and-smoke:
-    name: Build & Smoke (${{ matrix.os }})
+  unit-tests:
+    name: Unit Tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-14]  # macOS-14 = Apple Silicon runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Set up Swift 6.2
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.2"
+
+      # Dépendances pour les tests "purs Swift" normalement inutiles,
+      # mais on garde l'installation d'ncurses au cas où des tests
+      # importent indirectement le binding.
+      - name: Install ncurses (Ubuntu)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libncursesw6 libncursesw6-dev
+
+      - name: Install ncurses (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew update
+          brew install ncurses
+          PREFIX="$(brew --prefix ncurses)"
+          sudo mkdir -p /usr/local/opt/ncurses/include /usr/local/opt/ncurses/lib
+          sudo ln -sfn "$PREFIX/include" /usr/local/opt/ncurses/include
+          sudo ln -sfn "$PREFIX/lib"     /usr/local/opt/ncurses/lib
+          ln -sfn "$PREFIX/include/ncursesw" Sources/CNcurses/include/ncursesw
+
+      - name: Build (debug)
+        run: swift build -v
+
+      - name: Run tests
+        env:
+          TERM: xterm-256color
+        run: swift test -v
+
+  build-and-smoke:
+    name: Build & Smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: unit-tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,12 +77,10 @@ jobs:
         run: |
           brew update
           brew install ncurses
-          # Symlinks pour harmoniser les chemins attendus par Package.swift (Intel-style) sur Apple Silicon
           PREFIX="$(brew --prefix ncurses)"
           sudo mkdir -p /usr/local/opt/ncurses/include /usr/local/opt/ncurses/lib
           sudo ln -sfn "$PREFIX/include" /usr/local/opt/ncurses/include
           sudo ln -sfn "$PREFIX/lib"     /usr/local/opt/ncurses/lib
-          # Symlink headers directement visibles via publicHeadersPath
           ln -sfn "$PREFIX/include/ncursesw" Sources/CNcurses/include/ncursesw
 
       - name: Swift build (debug)
@@ -50,6 +92,5 @@ jobs:
         env:
           TERM: xterm-256color
         run: |
-          # 'script' fournit un pseudo-TTY pour éviter les surprises avec newterm()
           script -q /dev/null swift run NewtermSmoke
 
