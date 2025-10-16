@@ -16,10 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Swift 6.2
+      - name: Set up Swift 6.0
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: "6.2"
+          swift-version: "6.0"
 
       # Dépendances pour les tests "purs Swift" normalement inutiles,
       # mais on garde l'installation d'ncurses au cas où des tests
@@ -61,10 +61,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Swift 6.2
+      - name: Set up Swift 6.0
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: "6.2"
+          swift-version: "6.0"
 
       - name: Install ncurses (Ubuntu)
         if: startsWith(matrix.os, 'ubuntu')
