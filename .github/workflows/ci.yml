@@ -93,4 +93,3 @@ jobs:
           TERM: xterm-256color
         run: |
           script -q /dev/null swift run NewtermSmoke
-
