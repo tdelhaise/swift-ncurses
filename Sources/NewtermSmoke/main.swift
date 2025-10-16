@@ -5,12 +5,20 @@ import Darwin
 import Glibc
 #endif
 
-setenv("TERM", "xterm-256color", 1)
-guard let screen = newterm(nil, stdout, stdin) else {
-  fputs("newterm() failed\n", stderr)
-  exit(1)
+@MainActor
+private func run() {
+  setenv("TERM", "xterm-256color", 1)
+  guard let screen = newterm(nil, stdout, stdin) else {
+    _ = fputs("newterm() failed\n", stderr)
+    exit(1)
+  }
+  defer { endwin(); delscreen(screen) }
+  print("OK: newterm/init+cleanup")
 }
-set_term(screen)
-endwin()
-delscreen(screen)
-print("OK: newterm/init+cleanup")
+
+@main
+struct NewtermSmokeMain {
+  static func main() {
+    run()
+  }
+}
