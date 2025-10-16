@@ -1,6 +1,8 @@
 
 [![CI](https://github.com/tdelhaise/swift-ncurses/actions/workflows/ci.yml/badge.svg)](https://github.com/tdelhaise/swift-ncurses/actions/workflows/ci.yml)
 
+[![Tests](https://github.com/tdelhaise/swift-ncurses/actions/workflows/tests.yml/badge.svg)](https://github.com/tdelhaise/swift-ncurses/actions/workflows/tests.yml)
+
 
 # swift-ncurses
 
