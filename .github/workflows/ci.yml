@@ -26,7 +26,7 @@ jobs:
       - name: Run NewtermSmoke (pseudo-TTY)
         env:
           TERM: xterm-256color
-        run: script -q /dev/null swift run NewtermSmoke
+        run: script -q -e -c "swift run NewtermSmoke" /dev/null
 
   build-and-smoke-macos:
     name: Build & Smoke (macOS-14)
