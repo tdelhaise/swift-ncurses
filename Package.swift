@@ -26,21 +26,30 @@ let package = Package(
 			.linkedLibrary("panelw"),
 			.linkedLibrary("menuw"),
 			.linkedLibrary("formw"),
+			.linkedLibrary("util", .when(platforms: [.macOS, .linux])),
 			// Et pointer vers le keg Homebrew si besoin
 			.unsafeFlags(["-L/opt/homebrew/opt/ncurses/lib"], .when(platforms: [.macOS])),
 			.unsafeFlags(["-L/usr/local/opt/ncurses/lib"], .when(platforms: [.macOS]))
 		]
 	),
     .target(
+      name: "SnapshotSupport",
+      dependencies: []
+    ),
+    .target(
       name: "Ncurses",
       dependencies: ["CNcurses"]
+    ),
+    .executableTarget(
+      name: "NcursesSnapshotHelper",
+      dependencies: ["Ncurses", "SnapshotSupport"]
     ),
     .executableTarget(
       name: "NewtermSmoke", 
       dependencies: ["CNcurses"]),
     .testTarget(
       name: "NcursesTests",
-      dependencies: ["Ncurses"]
+      dependencies: ["Ncurses", "SnapshotSupport"]
     )
   ]
 )

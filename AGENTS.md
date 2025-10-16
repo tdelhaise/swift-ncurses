@@ -186,6 +186,7 @@ public enum CursesResult { case ok, err }
 **Test harness PTY (CI)**
 - Utilitaire basé sur `openpty` pour lancer `withScreen` avec un pseudo-terminal et capter la sortie (sans `script(1)`).
 - Tests d’instantanés (rendu attendu vs obtenu).
+- DSL de snapshot capable de paramétrer les fenêtres (couleurs, attributs, timeouts) et de scénariser clavier + souris via PTY.
 
 ---
 

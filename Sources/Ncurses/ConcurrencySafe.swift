@@ -193,6 +193,22 @@ public enum CursesResult: Sendable {
 }
 
 public enum Curses {
+	public struct ScreenIO: @unchecked Sendable {
+		public let input: UnsafeMutablePointer<FILE>
+		public let output: UnsafeMutablePointer<FILE>
+		public let error: UnsafeMutablePointer<FILE>
+		
+		public init(
+			input: UnsafeMutablePointer<FILE>,
+			output: UnsafeMutablePointer<FILE>,
+			error: UnsafeMutablePointer<FILE>
+		) {
+			self.input = input
+			self.output = output
+			self.error = error
+		}
+	}
+	
 	@CursesActor private static var nextColorPairIdentifier: Int16 = 1
 	@CursesActor fileprivate static var activeScreen: OpaquePointer?
 	@CursesActor private static var localeInitialized = false
@@ -203,20 +219,25 @@ public enum Curses {
 	@CursesActor
 	public static func withScreen<R>(
 		term: UnsafePointer<CChar>? = nil,
-		_ body: (OpaquePointer /* SCREEN* */) throws -> R
+		io: ScreenIO? = nil,
+		_ body: @CursesActor (OpaquePointer /* SCREEN* */) throws -> R
 	) throws -> R {
-		// Éviter tout accès à stdin/stdout/stderr globals : on passe par StdStreams.
-		let inFile  = try StdStreams.shared.inputFile()
-		let outFile = try StdStreams.shared.outputFile()
+		let ioContext: ScreenIO
+		if let io {
+			ioContext = io
+		} else {
+			let inFile = try StdStreams.shared.inputFile()
+			let outFile = try StdStreams.shared.outputFile()
+			let errFile = try StdStreams.shared.errorFile()
+			ioContext = ScreenIO(input: inFile, output: outFile, error: errFile)
+		}
 		
 		// Adapter la const-correctness attendue par l’import C (Linux attend parfois char *)
 		let mterm: UnsafeMutablePointer<CChar>? = term.map { UnsafeMutablePointer(mutating: $0) }
 		
 		// Important: pas de suspension ici; tout reste dans le même segment d’exécution.
-		guard let screen = CNcurses.newterm(mterm, outFile, inFile) else {
-			if let ef = try? StdStreams.shared.errorFile() {
-				_ = fputs("newterm() failed\n", ef)
-			}
+		guard let screen = CNcurses.newterm(mterm, ioContext.output, ioContext.input) else {
+			_ = fputs("newterm() failed\n", ioContext.error)
 			throw CursesError.newtermFailed
 		}
 		
@@ -831,6 +852,11 @@ public extension Curses {
 		let rows = Int32(CNcurses.getmaxy(win))
 		let cols = Int32(CNcurses.getmaxx(win))
 		return (rows, cols)
+	}
+
+	@CursesActor
+	static func currentTerminalSize() -> (rows: Int32, cols: Int32)? {
+		return terminalSize()
 	}
 }
 

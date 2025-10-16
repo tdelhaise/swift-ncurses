@@ -1,5 +1,6 @@
 #include "include/shim.h"
 #include <locale.h>
+#include <termios.h>
 
 attr_t swift_ncurses_attr_bold(void) { return A_BOLD; }
 attr_t swift_ncurses_attr_dim(void) { return A_DIM; }
@@ -42,4 +43,26 @@ mmask_t swift_ncurses_report_mouse_position(void) { return 0; }
 
 void swift_ncurses_setlocale(void) {
 	setlocale(LC_ALL, "");
+}
+
+int swift_ncurses_openpty(int *masterFd, int *slaveFd, int rows, int cols) {
+	struct winsize ws;
+	struct winsize *wsPtr = NULL;
+	if (rows > 0 && cols > 0) {
+		ws.ws_row = (unsigned short)rows;
+		ws.ws_col = (unsigned short)cols;
+		ws.ws_xpixel = 0;
+		ws.ws_ypixel = 0;
+		wsPtr = &ws;
+	}
+	return openpty(masterFd, slaveFd, NULL, NULL, wsPtr);
+}
+
+int swift_ncurses_set_winsize(int fd, int rows, int cols) {
+	struct winsize ws;
+	ws.ws_row = (unsigned short)((rows > 0) ? rows : 0);
+	ws.ws_col = (unsigned short)((cols > 0) ? cols : 0);
+	ws.ws_xpixel = 0;
+	ws.ws_ypixel = 0;
+	return ioctl(fd, TIOCSWINSZ, &ws);
 }

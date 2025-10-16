@@ -30,9 +30,9 @@ Roadmap for making the Swift ncurses façade production-ready and consumable by 
 - ✅ Locale bootstrap (`ensureLocaleOnce()`) guaranteeing wide-character readiness. (`Sources/Ncurses/ConcurrencySafe.swift:885`)
 - ✅ Public `CursesResult` helper mirroring `OK/ERR` semantics for callers. (`Sources/Ncurses/ConcurrencySafe.swift:184`)
 
-## Milestone M3 – Testing & Tooling (⬜️ Planned)
-- ⬜️ PTY-based integration harness to drive `withScreen` without a physical TTY.
-- ⬜️ Snapshot testing utilities for screen buffers and resize simulations.
+## Milestone M3 – Testing & Tooling (🔄 In Progress)
+- ✅ PTY-based integration harness with out-of-process helper (`NcursesSnapshotHelper`) and first deterministic snapshot test.
+- ✅ Snapshot testing utilities for screen buffers, resize simulations, and scripted keyboard/mouse input.
 - ⬜️ Continuous integration configuration leveraging PTY harness and non-interactive runs.
 - ⬜️ Developer tooling: fixture recorders, linting, and formatting enforcement.
 

@@ -3,6 +3,8 @@
 #if defined(__APPLE__)
   // Sur macOS, utiliser les headers système du SDK pour éviter les conflits
   #include <curses.h>
+  #include <util.h>
+  #include <sys/ioctl.h>
   typedef struct panel PANEL;
   extern PANEL *new_panel(WINDOW *);
   extern int del_panel(PANEL *);
@@ -16,7 +18,9 @@
   #include <ncursesw/curses.h>
   #include <ncursesw/panel.h>
   #include <ncursesw/menu.h>
-  #include <ncursesw/form.h>
+#include <ncursesw/form.h>
+#include <pty.h>
+#include <sys/ioctl.h>
 #endif
 
 #ifndef A_ITALIC
@@ -48,6 +52,8 @@ mmask_t swift_ncurses_button4_pressed(void);
 mmask_t swift_ncurses_button4_released(void);
 mmask_t swift_ncurses_report_mouse_position(void);
 void swift_ncurses_setlocale(void);
+int swift_ncurses_openpty(int *masterFd, int *slaveFd, int rows, int cols);
+int swift_ncurses_set_winsize(int fd, int rows, int cols);
 
 #ifdef __cplusplus
 }
